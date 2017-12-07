@@ -26,7 +26,7 @@ app.use("/", (req, res, next) => {
 });
 
 app.get("/twitter", cors(), (req, res, next) => {
-  res.send(JSON.stringify(twitterPosts));
+  res.json(twitterPosts);
 });
 
 app.set("port", process.env.PORT || 9001);
