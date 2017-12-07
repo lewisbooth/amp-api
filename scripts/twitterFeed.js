@@ -78,7 +78,7 @@ exports.getPosts = function(user = "lewisbooth", postCount = 10) {
   axios
     .get(signedURL)
     .then(res => {
-      res.data.forEach(post => {
+      res.data.forEach((post, i) => {
         const created_at = post.created_at
           .split(" ")
           .slice(1, 3)
