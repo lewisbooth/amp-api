@@ -73,7 +73,7 @@ exports.getPosts = function(user = "lewisbooth", postCount = 10) {
   var signedURL =
     baseURL + "?" + parameterString + "&oauth_signature=" + signatureURI;
 
-  var posts = [];
+  var posts = {};
 
   axios
     .get(signedURL)
@@ -92,7 +92,7 @@ exports.getPosts = function(user = "lewisbooth", postCount = 10) {
         if (post.retweeted_status) {
           postData.retweeted_status = post.retweeted_status;
         }
-        posts.push(postData);
+        posts[i] = postData;
       });
       console.log("Fetched new Twitter feeds");
     })
