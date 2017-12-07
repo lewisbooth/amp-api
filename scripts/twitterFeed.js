@@ -85,7 +85,7 @@ exports.getPosts = function(user = "lewisbooth", postCount = 10) {
           .join(" ");
         const postData = {
           created_at,
-          id: post.id_str,
+          permalink: `https://www.twitter.com/statuses/${post.id_str}`,
           entities: post.entities,
           text: post.text
         };
