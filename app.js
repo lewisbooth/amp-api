@@ -8,6 +8,7 @@ const app = express();
 
 const twitter = require("./scripts/twitterFeed");
 let twitterPosts = twitter.getPosts("ampstudiouk", 2);
+
 cron.schedule("*/5 * * * *", () => {
   const latestPosts = twitter.getPosts("ampstudiouk", 2);
   if (latestPosts) twitterPosts = latestPosts;
