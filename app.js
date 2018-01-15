@@ -28,6 +28,9 @@ app.use("/", (req, res, next) => {
 
 app.get("/twitter", cors(), (req, res, next) => {
   res.json(twitterPosts);
+  if (req.headers['user-agent'].includes("Insights")) {
+    res.setHeader("Cache-Control", "public, max-age=604800");
+  }
 });
 
 app.set("port", process.env.PORT || 9001);

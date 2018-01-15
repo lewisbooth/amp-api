@@ -86,7 +86,6 @@ exports.getPosts = function (user = "lewisbooth", postCount = 10) {
         const postData = {
           created_at,
           permalink: `https://www.twitter.com/AMPstudioUK/status/${post.id_str}`,
-          entities: post.entities,
           text: post.text
         };
         if (post.retweeted_status) {
