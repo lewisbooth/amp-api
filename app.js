@@ -63,7 +63,7 @@ app.post("/contact/landing-page", async (req, res, next) => {
   if (web) errors.bot = true;
 
   if (Object.keys(errors).length > 0) {
-    res.status(400);
+    res.status(200);
     res.json(errors);
     return;
   }
@@ -83,7 +83,7 @@ app.post("/contact/landing-page", async (req, res, next) => {
     res.send();
   } else {
     errors.slack = true;
-    res.status(400);
+    res.status(200);
     res.json(errors);
   }
 });
