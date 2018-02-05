@@ -15,7 +15,7 @@ function hexToBase64(str) {
   );
 }
 
-exports.getPosts = function (user = "lewisbooth", postCount = 10) {
+exports.getPosts = function(user = "lewisbooth", postCount = 10) {
   var method = "GET";
   var baseURL = "https://api.twitter.com/1.1/statuses/user_timeline.json";
 
@@ -47,7 +47,7 @@ exports.getPosts = function (user = "lewisbooth", postCount = 10) {
   }
 
   // Sort the parameter array alphabetically by key
-  sortedParameters.sort(function (a, b) {
+  sortedParameters.sort(function(a, b) {
     return a[0] > b[0];
   });
 
@@ -85,7 +85,9 @@ exports.getPosts = function (user = "lewisbooth", postCount = 10) {
           .join(" ");
         const postData = {
           created_at,
-          permalink: `https://www.twitter.com/AMPstudioUK/status/${post.id_str}`,
+          permalink: `https://www.twitter.com/AMPstudioUK/status/${
+            post.id_str
+          }`,
           text: post.text
         };
         if (post.retweeted_status) {
@@ -97,7 +99,7 @@ exports.getPosts = function (user = "lewisbooth", postCount = 10) {
     })
     .catch(err => {
       console.log("Error fetching Twitter feed");
-      console.log(err);
+      // console.log(err);
       return null;
     });
 

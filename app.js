@@ -5,6 +5,8 @@ const bodyParser = require("body-parser");
 const cron = require("node-cron");
 const cors = require("cors");
 const app = express();
+const { logging } = require("./scripts/logging");
+const { postToSlack } = require("./scripts/slack");
 
 const twitter = require("./scripts/twitterFeed");
 let twitterPosts = twitter.getPosts("ampstudiouk", 2);
@@ -14,22 +16,62 @@ cron.schedule("*/5 * * * *", () => {
   if (latestPosts) twitterPosts = latestPosts;
 });
 
+app.use(express.static("static"));
+
 app.use(compression());
 
-app.use("/", (req, res, next) => {
-  const timestamp = new Date().toString();
-  var ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-  console.log(`${timestamp} ${req.method} ${req.path} ${ip}`);
-  if (req.method === "POST") {
-    console.log(req.body);
-  }
-  next();
-});
+app.use(
+  bodyParser.urlencoded({
+    extended: true
+  })
+);
+
+app.use(bodyParser.json());
+
+app.use(logging);
 
 app.get("/twitter", cors(), (req, res, next) => {
   res.json(twitterPosts);
-  if (req.headers['user-agent'].includes("Insights")) {
+  if (req.headers["user-agent"].includes("Insights")) {
     res.setHeader("Cache-Control", "public, max-age=604800");
+  }
+});
+
+app.post("/contact/landing-page", cors(), async (req, res, next) => {
+  const { name, email, company, industry, message, web, title } = req.body;
+
+  let formattedTitle = `*Title*: ${title}`;
+
+  let errors = {};
+
+  if (!name) errors.name = true;
+  if (!email) errors.email = true;
+  if (!message) errors.message = true;
+  if (web) errors.bot = true;
+
+  if (Object.keys(errors).length > 0) {
+    res.status(500);
+    res.json(errors);
+    return;
+  }
+
+  let text = `
+*Name:* ${name}
+*Email:* ${email}
+*Company Name:* ${company}
+*Industry:* ${industry}
+*Message:* ${message}
+  `;
+
+  const slackMessage = await postToSlack({ title: formattedTitle, text });
+
+  if (!slackMessage.err) {
+    res.status(200);
+    res.send();
+  } else {
+    errors.slack = true;
+    res.status(500);
+    res.json(errors);
   }
 });
 
