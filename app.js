@@ -20,6 +20,13 @@ app.use(express.static("static"));
 
 app.use(compression());
 
+const corsOptions = {
+  origin: "https://amp.studio",
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
+
 app.use(
   bodyParser.urlencoded({
     extended: true
@@ -30,14 +37,14 @@ app.use(bodyParser.json());
 
 app.use(logging);
 
-app.get("/twitter", cors(), (req, res, next) => {
+app.get("/twitter", (req, res, next) => {
   res.json(twitterPosts);
   if (req.headers["user-agent"].includes("Insights")) {
     res.setHeader("Cache-Control", "public, max-age=604800");
   }
 });
 
-app.post("/contact/landing-page", cors(), async (req, res, next) => {
+app.post("/contact/landing-page", async (req, res, next) => {
   const { name, email, company, industry, message, web, title } = req.body;
 
   let formattedTitle = `*Title*: ${title}`;
