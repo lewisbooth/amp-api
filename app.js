@@ -20,7 +20,7 @@ app.use(express.static("static"));
 
 app.use(compression());
 
-var whitelist = ["https://amp.studio", "localhost:3000"];
+var whitelist = ["https://amp.studio", "http://localhost:3000"];
 const corsOptions = {
   origin: function(origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
