@@ -7,22 +7,31 @@ const cors = require("cors");
 const app = express();
 const { logging } = require("./scripts/logging");
 const { postToSlack } = require("./scripts/slack");
-
 const twitter = require("./scripts/twitterFeed");
-let twitterPosts = twitter.getPosts("ampstudiouk", 2);
 
-cron.schedule("*/5 * * * *", () => {
-  const latestPosts = twitter.getPosts("ampstudiouk", 2);
-  if (latestPosts) twitterPosts = latestPosts;
-});
 
-app.use(express.static("static"));
+/*------------------------------*/
+/*--------- MIDDLEWARE ---------*/
+/*------------------------------*/
 
+// Logs each request to the console with timestamp, IP, POST data etc
+app.use(logging);
+// Enable GZIP compression
 app.use(compression());
+// Serve static files from the ./static folder
+app.use(express.static("static"));
+// Parse POST data into a useable format
+app.use(bodyParser.json());
+app.use(
+  bodyParser.urlencoded({
+    extended: true
+  })
+);
 
-var whitelist = ["https://amp.studio", "http://localhost:3000"];
+// Allow CORS from these domains
+const whitelist = ["https://amp.studio", "http://localhost:3000", "http://localhost:5000"];
 const corsOptions = {
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -33,16 +42,20 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use(
-  bodyParser.urlencoded({
-    extended: true
-  })
-);
 
-app.use(bodyParser.json());
+/*------------------------------*/
+/*---------- TWITTER -----------*/
+/*------------------------------*/
 
-app.use(logging);
+// Fetch new AMP Twitter posts when script first runs
+let twitterPosts = twitter.getPosts("ampstudiouk", 2);
+// Refresh AMP Twitter posts every 5 minutes via cron job
+cron.schedule("*/5 * * * *", () => {
+  const latestPosts = twitter.getPosts("ampstudiouk", 2);
+  if (latestPosts) twitterPosts = latestPosts;
+});
 
+// Route responds with JSON of latest AMP Twitter posts
 app.get("/twitter", (req, res, next) => {
   res.json(twitterPosts);
   if (req.headers["user-agent"].includes("Insights")) {
@@ -50,24 +63,29 @@ app.get("/twitter", (req, res, next) => {
   }
 });
 
+
+/*------------------------------*/
+/*----- LANDING PAGE FORMS -----*/
+/*------------------------------*/
+
+// Handle landing page contact forms
+// Forwards message to our friendly slackbot 🤖
 app.post("/contact/landing-page", async (req, res, next) => {
+  // Extract useful data into individual variables with ES6 destructuring
   const { name, email, company, industry, message, web, title } = req.body;
 
-  let formattedTitle = `*Title*: ${title}`;
-
   let errors = {};
-
   if (!name) errors.name = true;
   if (!email) errors.email = true;
   if (!message) errors.message = true;
   if (web) errors.bot = true;
-
   if (Object.keys(errors).length > 0) {
     res.status(200);
     res.json(errors);
     return;
   }
 
+  // Build the formatted Slack message, 
   let text = `
 *Name:* ${name}
 *Email:* ${email}
@@ -76,18 +94,29 @@ app.post("/contact/landing-page", async (req, res, next) => {
 *Message:* ${message}
   `;
 
-  const slackMessage = await postToSlack({ title: formattedTitle, text });
-
-  if (!slackMessage.err) {
-    res.status(200);
-    res.send();
-  } else {
-    errors.slack = true;
-    res.status(200);
-    res.json(errors);
+  // Add the page reference to the Slack message
+  // Keeps track of where the enquiry came from
+  if (title) {
+    text = `*Offer Page:* ${title}` + text
   }
+
+  // Async post to Slack
+  const slackMessage = await postToSlack({ text });
+
+  // Check for errors posting to Slack
+  if (!slackMessage.err) errors.slack = true;
+
+  // Send the response back to the client
+  res.status(200);
+  res.json(errors);
 });
 
+
+/*------------------------------*/
+/*----------- SERVER -----------*/
+/*------------------------------*/
+
+// Boot up the server
 app.set("port", process.env.PORT || 9001);
 const server = app.listen(app.get("port"), () => {
   console.log(`Express running → PORT ${server.address().port}`);
