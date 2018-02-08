@@ -104,7 +104,7 @@ app.post("/contact/landing-page", async (req, res, next) => {
   const slackMessage = await postToSlack({ text });
 
   // Check for errors posting to Slack
-  if (!slackMessage.err) errors.slack = true;
+  if (slackMessage.err) errors.slack = true;
 
   // Send the response back to the client
   res.status(200);
