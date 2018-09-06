@@ -29,7 +29,6 @@ app.use(
 )
 
 // Allow CORS from these domains
-const whitelist = ["https://amp.studio", "http://localhost:3000", "http://localhost:5000", "http://localhost:9001"]
 const corsOptions = {
   origin: function (origin, callback) {    
     callback(null, true)
@@ -57,8 +56,7 @@ app.get("/twitter", (req, res, next) => {
   if (req.headers["user-agent"].includes("Insights")) {
     res.setHeader("Cache-Control", "public, max-age=604800")
   }
-  console.log(twitterPosts)
-  res.json(JSON.stringify(twitterPosts))
+  res.json(twitterPosts)
 })
 
 
