@@ -28,8 +28,8 @@ exports.getPosts = function(user = "lewisbooth", postCount = 10) {
     // 32 byte random string
     oauth_nonce: (Math.random() * 1e49).toString(36),
     oauth_timestamp: Math.floor(Date.now() / 1000),
-    oauth_consumer_key: "9Vlt3cU6WkW19yO3CjfUIjrjX",
-    oauth_token: "3424115692-kPTuPIt4dB3fMErP2gp2mSCS3LNaJ8hhTE2pk4b",
+    oauth_consumer_key: process.env.oauth_consumer_key,
+    oauth_token: process.env.oauth_access_token,
     oauth_signature_method: "HMAC-SHA1",
     oauth_version: "1.0",
     screen_name: user,
@@ -98,6 +98,7 @@ exports.getPosts = function(user = "lewisbooth", postCount = 10) {
       console.log("Fetched new Twitter feeds");
     })
     .catch(err => {
+      console.log(err)
       console.log("Error fetching Twitter feed");
       // console.log(err);
       return null;
