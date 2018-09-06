@@ -29,14 +29,10 @@ app.use(
 )
 
 // Allow CORS from these domains
-const whitelist = ["https://amp.studio", "http://localhost:3000", "http://localhost:5000"]
+const whitelist = ["https://amp.studio", "http://localhost:3000", "http://localhost:5000", "http://localhost:9001"]
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error("Not allowed by CORS"))
-    }
+  origin: function (origin, callback) {    
+    callback(null, true)
   },
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
@@ -58,10 +54,11 @@ cron.schedule("*/5 * * * *", () => {
 
 // Route responds with JSON of latest AMP Twitter posts
 app.get("/twitter", (req, res, next) => {
-  res.json(twitterPosts)
   if (req.headers["user-agent"].includes("Insights")) {
     res.setHeader("Cache-Control", "public, max-age=604800")
   }
+  console.log(twitterPosts)
+  res.json(JSON.stringify(twitterPosts))
 })
 
 

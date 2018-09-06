@@ -2,7 +2,7 @@ const CryptoJS = require("crypto-js")
 const axios = require("axios")
 const btoa = require("btoa")
 
-exports.getPosts = function(user = process.env.twitter_user, postCount = 2) {
+exports.getPosts = function(postCount = 2) {
   const baseURL = "https://api.twitter.com/1.1/statuses/user_timeline.json"
 
   // These parameters are required for generating an OAuth2 signature.
@@ -10,7 +10,7 @@ exports.getPosts = function(user = process.env.twitter_user, postCount = 2) {
   const signingKey = `${process.env.oauth_consumer_secret}&${process.env.oauth_access_secret}`
   const parameters = {
     // The user who own the Twitter Developer App account
-    screen_name: user,
+    screen_name: process.env.twitter_user,
     // Number of posts to fetch
     count: postCount.toString(),
     // Nonce must be a random 32 byte string
@@ -42,11 +42,11 @@ exports.getPosts = function(user = process.env.twitter_user, postCount = 2) {
   const signedURL =
     baseURL + "?" + sortedParameters + "&oauth_signature=" + signatureURI
 
+    const posts = {}
     
     axios
     .get(signedURL)
     .then(res => {
-      const posts = {}
       res.data.forEach((post, i) => {
         const postData = {
           created_at: post.created_at.split(" ").slice(1, 3).join(" "),
@@ -58,14 +58,13 @@ exports.getPosts = function(user = process.env.twitter_user, postCount = 2) {
         }
         posts[i] = postData
       })
-      console.log(posts)
-      return posts
     })
     .catch(err => {
       console.log("Error fetching Twitter feed")
       // console.log(err)
       return null
     })
+    return posts
   }
 
 function hexToBase64(str) {
