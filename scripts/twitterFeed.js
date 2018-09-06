@@ -48,7 +48,7 @@ exports.getPosts = function(postCount = 2) {
     .get(signedURL)
     .then(res => {
       res.data.forEach((post, i) => {
-        if (i > postCount) return
+        if (i >= postCount) return
         const postData = {
           created_at: post.created_at.split(" ").slice(1, 3).join(" "),
           permalink: `https://www.twitter.com/AMPstudioUK/status/${post.id_str}`,
